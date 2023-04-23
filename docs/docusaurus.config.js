@@ -106,7 +106,7 @@ const config = {
         copyright: `Copyright © ${new Date().getFullYear()} Stackess Web Services, Inc.`,
       },
       prism: {
-        theme: lightCodeTheme,
+        theme: darkCodeTheme,
         darkTheme: darkCodeTheme,
       },
     }),

@@ -18,6 +18,6 @@ import {Entry, LogBook} from 'log-book-service';
 The `Entry` and `LogBook` classes are code-generated based on the backend service code you wrote. If you add more types or rename these types, you'll need to update your imports accordingly.
 :::
 
-:::details Not just React
+:::tip Not just React
 Estate is designed to work with any JavaScript front-end or backend framework. If you're not using React, you can use the `createEstateClient` function exported from your service module to get the `estate` object.
 :::

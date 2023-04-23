@@ -6,7 +6,7 @@ sidebar_label: 'Create a Service'
 
 Estate backends are called **Services**.
 
-1. Create and initialize a service
+3. Create and initialize a service
 
 ```bash
 $ cd service

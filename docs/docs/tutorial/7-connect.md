@@ -20,4 +20,4 @@ If you're unsure what your service is named, the `estate list` command will show
 The `.` path argument must point to the directory where your `package.json` file is located.
 :::
 
-1. Answer `pnpm` when it asks you to install node modules.
+2. Answer `pnpm` when it asks you to install node modules.

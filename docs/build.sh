@@ -63,9 +63,7 @@ fi
 
 echo "Building for the ${BUILD_TARGET} environment in ${BUILD_TYPE_L} mode"
 
-DIST_DIR="./dist"
-rm -rf "${DIST_DIR}"
+BUILD_PATH="build"
+rm -rf "${BUILD_PATH}"
 
-export BUILD_PATH="dist"
-# NODE_OPTIONS=--openssl-legacy-provider 
-npm run _build
+npm run build

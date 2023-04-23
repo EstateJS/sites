@@ -6,7 +6,7 @@ sidebar_label: 'Generate a service module'
 
 Front-end code connects to Services using a code-generated **Service Module**. A service module is used like any other NPM package. It contains all the types/functions necessary to talk to your service from the front-end at runtime as well as .d.ts files.
 
-1. Call connect, passing it the front-end NPM project directory as well as the service name.
+1. Connect your NPM project to your service passing NPM project directory as well as the service name
 
 ```bash
 $ estate connect . log-book

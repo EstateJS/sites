@@ -8,10 +8,10 @@ The `sign-log-book.tsx` is the page where people enter their first name and sele
 
 ## Use the `estate` object to get a `LogBook` worker proxy
 
-1. Paste this code into **`src/pages/sign-log-book.tsx`** file where it says **//1**
+10. Paste this code into **`src/pages/sign-log-book.tsx`** file where it says **//10**
 
 ```typescript
-//1
+//10
 const estate = useEstateClient();
 const logBook = estate.getWorker(LogBook, "default");
 ```
@@ -24,10 +24,10 @@ The second argument "default" is called the primaryKey. It could be any string a
 
 We're going to create a new `Entry` instance and pass it to the worker when the Sign button is clicked. We need to update the `handleOnSubmit` function to make this happen.
 
-2. Paste this code into **`src/pages/sign-log-book.tsx`** file where it says **//2**
+11. Paste this code into **`src/pages/sign-log-book.tsx`** file where it says **//11**
 
 ```typescript
-//2
+//11
 const entry = new Entry(name!, date!);        
 logBook.addEntry(entry)
     .then(() => {
@@ -42,10 +42,10 @@ logBook.addEntry(entry)
 The `log-book-entries.tsx` page is what shows the list of people who have signed the log book.
 We need to update it to ask our worker for the list of `Entries`. React's useEffect hook is a great place to call workers in the UI.
 
-3. Paste this code into the `useEffect` where it says **//1**
+12. Paste this code into the `useEffect` where it says **//12**
 
 ```typescript
-//4
+//12
 logBook.getEntries()
     .then((values: Entry[]) => {
         setEntries(values);

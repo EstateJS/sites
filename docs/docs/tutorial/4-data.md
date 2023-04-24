@@ -8,9 +8,10 @@ sidebar_label: 'Create a Data element'
 
 Let's create an `Entry` data element to persist the `firstName` and `date` of people who sign the log book.
 
-5. Paste this code into `log-book-service/index.ts` right below the import line:
+4. Paste this code into `service/index.ts` right below the import line where it says **//4**.
 
 ```typescript
+//4
 export class Entry extends Data {
     constructor(public firstName: string, public date: Date) {
         super(firstName);

@@ -6,7 +6,9 @@ sidebar_label: 'Create a Service'
 
 Estate backends are called **Services**.
 
-3. Create and initialize a service
+The service directory has already been created for you. All that's left is to initialize it.
+
+3. Initialize the service directory passing the directory and the service name.
 
 ```bash
 $ cd service

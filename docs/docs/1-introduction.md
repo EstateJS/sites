@@ -23,4 +23,4 @@ Understand Estate serverless development in **10 minutes** by building!
 
 Create a new Estate backend and follow the **very short** embedded tutorial.
 
-Get started using our browser [playground](getting-started/playground) or [installing locally](getting-started/installation).
+Get started using our browser [playground](getting-started/playground) **(recommended)** or [installing locally](getting-started/installation).

@@ -11,4 +11,3 @@ $ estate login
 This opens a new browser tab.
 
 2. Click "_Continue as Guest_" to login anonymously.
-

@@ -6,14 +6,16 @@ sidebar_label: 'Complete'
 
 Now that our log book application is complete, we can see it in action
 
+13. Start the front-end in development mode
 ```bash
 $ npm run dev
 ```
 
-1. Click "Sign" in the top bar
-2. Enter a name and date
-3. Click "Sign" again
-4. You'll see the new signature and date you signed
+14. Try it out
+    1. Click "Sign" in the top bar
+    2.  Enter a name and date
+    3.  Click "Sign" again
+    4.  You'll see the new signature and date you signed
 
 The signatures will still exist after restarts because they're stored in the Estate database in the cloud, not the browser or any local cache.
 

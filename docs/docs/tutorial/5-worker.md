@@ -8,9 +8,10 @@ sidebar_label: 'Create a Worker'
 
 Let's create a `LogBook` worker to keep track of who signs the log book.
 
-1. Paste this code into `log-book-service/index.ts` below `Entry`:
+5. Paste this code into `service/index.ts` after the `Entry` class where it says **//5**.
 
 ```typescript
+//5
 export class LogBook extends Worker {
     private _entriesIndex: Set<string>;
     constructor(primaryKey: string) {

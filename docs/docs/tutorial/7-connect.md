@@ -1,5 +1,5 @@
 ---
-sidebar_label: 'Generate a service module'
+sidebar_label: 'Generate a Service Module'
 ---
 
 # Generate a Service Module
@@ -12,12 +12,13 @@ Front-end code connects to Services using a code-generated **Service Module**. A
 $ estate connect . log-book
 ```
 
+:::note NPM Directory
+The `.` path argument must point to the directory where your `package.json` file is located.
+:::
+
 :::tip tip
 If you're unsure what your service is named, the `estate list` command will show you.
 :::
 
-:::tip tip
-The `.` path argument must point to the directory where your `package.json` file is located.
-:::
 
 8. Answer `pnpm` when it asks you to install node modules.

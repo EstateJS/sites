@@ -2,7 +2,10 @@
 sidebar_label: 'Messages'
 sidebar_position: 5
 ---
-# Message - built-in SSE
+
+This page is a work in progress. Check back tomorrow or Friday.
+
+<!-- # Message - built-in SSE
 
 Messages are an implementation of the Server-Sent-Events (SSE) concept used by socket.io and SignalR except built into Estate as a first-class concept. Messages are an efficient way to send data from the cloud (“Server”) to any number of clients without the clients polling a service.
 
@@ -29,4 +32,4 @@ Clients must subscribe to receive messages. To subscribe a client must pass thre
 * A function taking a single argument that will be called with the message instance when a message is recieved
 
 After a client subscribes and until the client unsubscribes (or shuts down), it will receive messages
-every time `system.sendMessage(...)` is called with the same source and message type.
+every time `system.sendMessage(...)` is called with the same source and message type. -->

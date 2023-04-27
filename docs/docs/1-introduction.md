@@ -7,7 +7,7 @@ slug: '/'
 
 Get ready to experience life without DevOps or boilerplate.
 
-Estate is a minimalistic, highly abstracted serverless cloud platform where developers create stateful backends by writing TypeScript domain-driven POJOs: just business logic and domain model. The platform handles all the cloud minutea.
+Estate is a highly abstracted serverless cloud platform where developers create stateful backends by writing TypeScript domain-driven POJOs: just business logic and domain model. The platform handles all the cloud minutea.
 
 No more _REST_. No more interpreting HTTP status code arcanery or web service routing nonsense. Consuming a Estate backend is trivial because all the client-connection code is generated for you.
 

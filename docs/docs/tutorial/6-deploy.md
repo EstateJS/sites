@@ -9,6 +9,5 @@ Now that the backend is written, it's time to deploy it to the cloud so that cli
 6. Deploy the service to the cloud
 
 ```bash
-$ cd service
-$ estate deploy .
+$ estate deploy service/
 ```

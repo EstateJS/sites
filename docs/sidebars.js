@@ -45,7 +45,9 @@ const sidebars = {
       label: 'Guides',
       items: [
         'guides/introduction',
+        'guides/examples',
         'guides/services',
+        'guides/clients',
         'guides/workers',
         'guides/data',
         'guides/messages'

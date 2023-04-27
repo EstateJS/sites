@@ -4,7 +4,7 @@ sidebar_label: 'Create a Data element'
 
 # Create a Data element
 
-**Data** elements are used to persist structured data similar to how a database table or spreadsheet works except they're TypeScript and their properties are the data you want persisted.
+**Data** elements are used to persist structured data similar to a database table or spreadsheet except they're TypeScript and their properties are the data you want persisted.
 
 Let's create an `Entry` data element to persist the `firstName` and `date` of people who sign the log book.
 

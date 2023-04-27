@@ -3,6 +3,9 @@ sidebar_label: 'Data'
 sidebar_position: 5
 ---
 
+This page is a work in progress. Check back tomorrow or Friday.
+
+<!--
 # Data - intelligent data objects
 
 Similar to a database table, you create Data derived classes when you want to persist, use, and share structured data.
@@ -66,4 +69,4 @@ Putting everything together it would look something like the above diagram. Note
 
 As previously noted, Service instances are created on first use. So the first time any servicemethod, in this case addUserAsync is called, a new MyService object instance is created with the primary key “default” (because that’s what the client specified in the call to `database.getService(MyService, "default")`.  
 
-If multiple users access the website they’ll get the very same “default” MyService instance with the very same object state (because service instances are singletons.) Clients can share data with each other by sharing it with the service and providing a method that returns the property. Allowing clients to interact with each other brings us to the final core concept, Server-Sent-Events.
+If multiple users access the website they’ll get the very same “default” MyService instance with the very same object state (because service instances are singletons.) Clients can share data with each other by sharing it with the service and providing a method that returns the property. Allowing clients to interact with each other brings us to the final core concept, Server-Sent-Events. -->

@@ -3,7 +3,7 @@ sidebar_label: 'Messages'
 sidebar_position: 5
 ---
 
-This page is a work in progress. Check back tomorrow (Sunday) afternoon.
+This page is a work in progress. Check back later today or tomorrow (Sunday).
 
 <!-- # Message - built-in SSE
 

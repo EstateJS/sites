@@ -22,7 +22,7 @@ When the `estate-tools` package logs in, it will authenticate with Google's O-Au
 
 ## Runtime layer security
 
-Once you've logged in and got your admin credentials, you're able to create a key so clients can access your services at runtime.
+Once you've logged in and received your admin credentials, you're able to create a key so clients can access your services at runtime.
 The `estate connect` command instructs the admin layer to generate a client key and store it in Redis. River (the runtime ingress daemon) queries Redis when each client tries to establish a WebSocket connection to verify its client key is still valid.
 
 :::note key

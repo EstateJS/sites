@@ -8,7 +8,7 @@ sidebar_label: 'Workers'
 
 Workers are globally available Internet-connected singletons. Any number of client applications can call the same shared object instances at the same time.
 
-## Remote Code Execution
+## Remote Execution Model
 
 Workers are ideal for housing code that needs to be run outside the client such as
 
@@ -20,28 +20,27 @@ Workers are ideal for housing code that needs to be run outside the client such 
 The client generated Service Module will never contain the Worker's actual code. It will contain a Worker proxy class that has the same **interface** (methods, method arguments/types, and return types) as the Worker.
 :::
 
-## Stateful
+## Properties
 
-Workers retain the values of all their properties between calls. This makes them stateful.
+Workers can contain any number of JavaScript properties with any name. You can create new properties in any Worker method, not just the constructor, just like any other POJO.
 
-For example:
+### Data Types
 
-```typescript
-export class ExerciseTrackerWorker extends Worker {
-    private _usernames: Set<string>;
-    //...
-    addUser(username: string): void {
-        if (this._usernames.has(username))
-            throw new Error("A user with that name already exists");
-        this._usernames.add(username);
-    }
-```
+Most built-in JavaScript property types are supported including:
 
-When client A calls `addUser('Scott')` if the user doesn't already exist it will be saved and the worker's `this._usernames` is updated.  
-Later, when client B calls `addUser('Scott')` the user will already exist and client B will get an error.
+* `undefined`
+* `null`
+* `number`
+* `boolean`
+* `object`
+* `Map`
+* `Set`
+* `Array`
+* `Date`
+* `BitInt`
 
-:::note this
-At runtime, inside the worker method code above, `this` is the Worker shared object instance.
+:::note ArrayBuffer
+At this time, the ArrayBuffer type is not supported.
 :::
 
 ## Creating a Worker
@@ -69,6 +68,30 @@ PrimaryKeys are unique to the Worker subtype. Meaning, you could have worker typ
 
 Worker instances are created automatically the first time a method is called on them. Additionally, they live (in the cloud platform) until you explicitly delete them.
 
+## Retains State Between Calls
+
+Workers retain the values of all their properties between calls. This makes them stateful.
+
+For example:
+
+```typescript
+export class ExerciseTrackerWorker extends Worker {
+    private _usernames: Set<string>;
+    //...
+    addUser(username: string): void {
+        if (this._usernames.has(username))
+            throw new Error("A user with that name already exists");
+        this._usernames.add(username);
+    }
+```
+
+When client A calls `addUser('Scott')` if the user doesn't already exist it will be saved and the worker's `this._usernames` is updated.  
+Later, when client B calls `addUser('Scott')` the user will already exist and client B will get an error.
+
+:::note this
+At runtime, inside the worker method code above, `this` is the Worker shared object instance.
+:::
+
 ## Calling a Worker
 
 A client application uses this TypeScript syntax to get a worker instance at runtime:
@@ -87,11 +110,23 @@ Each different primaryKey string will result in a different Worker instance bein
 
 When a client calls a method on a Worker proxy, the request is sent over the Internet to the Estate platform where the Worker instance is hosted. The method is called on the Worker instance and if there wasn't an error, the Worker's changed properties are saved to the embedded database.
 
-## Units-of-work
+## Automatically Saved
 
-Each worker method call is executed inside a database transaction as a "unit-of-work". As a result, either all code inside the method works or no changes are made to any of the datastores affected. This allows clients to retry calls without fear of data corruption.
+Any property changes made inside a worker method call are saved automatically if the underlying call succeeds.
 
-## Transaction Success or Failure
+## Transactional Unit-of-Work
+
+Each remote worker method call is executed inside a database transaction. This means either all code inside the method works or no changes are made. This allows clients to retry calls without fear of data corruption.
+
+:::info info
+Calling a method on another worker instance from inside a worker instance doesn't result in a new transaction, it uses the same transaction.
+:::
+
+:::note Unit-of-Work
+See [Martin Fowler's](https://martinfowler.com/eaaCatalog/unitOfWork.html) great explaination of the Unit-of-Work architecture pattern.
+:::
+
+### Transaction Success or Failure
 
 When the worker method code is done executing, the following questions are asked to determine whether or not the transaction was successful:
 
@@ -104,4 +139,34 @@ If the answer to **any** of these questions is **yes**, the transaction is rolle
 
 However, if the answer to all these questions is **no**, the transaction is **committed**, the worker method call is successful, and the results are returned to the client.  
 
-Workers are very useful but their true power is found when using Data to store, retrieve, and transfer application data.
+## Reverting Worker Changes
+
+Sometimes while inside a worker method call you may want to revert all the changes made to the Worker since the start of the transaction without throwing an exception. This can be useful if you want handle a data condition silently, without concerning clients.
+
+```typescript
+import {Worker, revertObject} from 'estate-runtime'
+export class MyWorker extends Worker {
+    fooMethod(): void {
+        this.fooValue = 1;      // create  property named fooValue and assign the value 1     
+        this.barValue = true;   // create property named barValue and assign the value true
+        revertObject(this);     // undoes those two property creations
+    }
+}
+```
+
+## Deletion
+
+Workers can be deleted from inside the Worker itself (or another Worker) using the `deleteObject` function.
+
+```typescript
+import {Worker, deleteObject} from 'estate-runtime'
+export class MyWorker extends Worker {
+    fooMethod(): void {
+        deleteObject(this);
+    }
+}
+```
+
+:::info flag
+The `deleteObject` function leaves behind a flag in the database to prevent another Worker with the same type and primaryKey from being created. This design prevents accidental recreation. If you do not want this, pass `true` as the second argument to `deleteObject`.
+:::

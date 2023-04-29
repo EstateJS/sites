@@ -1,72 +1,200 @@
 ---
 sidebar_label: 'Data'
-sidebar_position: 5
 ---
 
-This page is a work in progress. Check back tomorrow or Friday.
+# Data
 
-<!--
-# Data - intelligent data objects
+Data elements are used to keep, use, and share structured data.  
 
-Similar to a database table, you create Data derived classes when you want to persist, use, and share structured data.
+Data elements are like spreadsheets where the columns are TypeScript properties and each row is a unique instance.
 
 ## Properties
 
-Your Data can contain any number of JavaScript properties with any name, just use normal this.propertyName syntax when getting/setting/deleting values. All built-in JavaScript property types are supported including Map, Set, and Array. You can create new properties in any Data method, not just the constructor.
+Data can contain any number of JavaScript properties with any name. You can create new properties in any Data method, not just the constructor, just like any other POJO.
 
-## Creating new objects
+### Data Types
 
-You create new Data object instances the same way you create instances of other TypeScript classes: use the new operator. All Data have a primaryKey that, along with the class type, uniquely identifies the object instance. The primaryKey is an opaque 1 to 1024 character string and must be supplied to super in your class’s constructor.
+Most built-in JavaScript property types are supported including:
 
-## Retrieving existing data objects from the client
+* `undefined`
+* `null`
+* `number`
+* `boolean`
+* `object`
+* `Map`
+* `Set`
+* `Array`
+* `Date`
+* `BitInt`
 
-Data instances can be retrieved from their datastore on the client using this syntax:
+:::note ArrayBuffer
+At this time, the ArrayBuffer type is not supported.
+:::
+
+## Business Logic
+
+Data elements are ideal for holding business data because you can write business logic (getters and setters) that ensure property values are valid before they're changed or returned.  
+
+### Local Execution
+
+When a client or a worker calls functions on Data elements, they're executed inside the same process just like any other function. In other words, regardless of whether the Data element's functions are called from inside a Worker or client-side, the same logic will be called.
+
+## Creating a new Data element
+
+To create a Data element you write a POJO that extends the `Data` base type in service code. The `Data` type is imported from the provided `estate-runtime` library.
 
 ```typescript
-let myData = await database.getDataAsync(MyData,"a primary key");
+import {Data} from 'estate-runtime';
+export class User extends Data {
+    constructor(public username: string) {
+        super(username);
+    }
+}
 ```
 
-The first argument is the Data class you’d like to retrieve and the second is the primary key. This will load the object into local client memory where it can be displayed in a UI element or modified just like any other JavaScript object.
+The Data element construtor can contain any number of arguments. However, a `primaryKey` must be passed to super.
 
-## Retrieving existing data objects from a service in the database
+### PrimaryKey
 
-Data instances can also be retrieved from their datastore while inside a Service’s service method call with this syntax:
+All Data elements have an immutable `primaryKey` property that's set in the constructor by passing a string to `super`.
+
+:::tip Type-scoped Uniqueness
+PrimaryKeys are unique to the Data subtype. Meaning, you could have Data types named `User` and `Exercise` with the same `primaryKey` but not two `User` instances with the same primaryKey.
+:::
+
+## Instantiating
+
+You create new Data object instances using the `new` operator. This works client-side as well as within workers.
 
 ```typescript
-let myData = system.getData(MyData,"a primary key");
+const user = new User('Scott');
 ```
 
-The arguments are the same as the clients-side example above. This loads the object into the database memory for use during the service method call. You can make changes or use the object like any other JavaScript object from inside the service and even return it to the client (using a return statement).
+## Retrieving
 
-## Manually Saved
+### Retrieving client-side
 
-Data object property changes must be saved manually from inside a service method (as shown above) or
-directly from the client using the `database.saveDataAsync` function. Though the Data instances themselves are stored in their datastore, they can be kept track of (or “indexed” in database terms) by Services using standard JS/TS collections such as Map, Set, and Array. This allows you to build powerful queries by writing plain JS/TS instead of being forced to learn a dedicated query language.
+Data instances can be retrieved client-side using the `getDataAsync` method off the `estate` object. Pass the Data-derived type as the first argument and the primaryKey as the second. This will load the object into local client memory where it can be displayed in a UI element or modified just like any other JavaScript object.
 
-## In-Proc Method Calls
+```typescript
+const user = await estate.getDataAsync(User, "a primary key");
+```
 
-Like Services, Data can contain methods but when a client calls them they’ll execute directly on
-the client. However, if a service calls a Data’s method it will execute in the database. This is an
-essential feature for writing getter/setter style business logic such as enforcing a property’s type or
-having a minimum string length.
+### Retrieving from inside a Worker
 
-### Remotely observable
+Data instances can be retrieved while inside a worker with the `getData` function imported from the provided `estate-runtime` library.
 
-Data instances are client observable: A client can “watch” a given Data instance for changes made by
-other clients/services and then retrieve those changes in real-time. You accomplish this from a client by
-first subscribing to updates with `database.subscribeUpdatesAsync` and then attaching a handler
-function with `database.addUpdateListener`. The example application (link below) has a
-demonstration of this functionality.
+```typescript
+const user = getData(User,"a primary key");
+```
 
-### Consistent, transparently versioned
+The arguments are the same as the clients-side example above. This loads the object into Service memory for use during the service method call. You can make changes or use the object like any other JavaScript object and even return it to the client.
 
-Data are transparently versioned and kept consistent using transactions and optimistic concurrency. They can be passed to and returned from Service methods and saved as part of other Data instances. In fact, there’s a special system method just for saving an entire graph of Data
-instances: `system.saveDataGraphs(data...)` which takes any number of Data instances and saves them along with all the Data instances they refer to (and so on.)
+## Saving
 
-### Data + Services = Stateful Serverless App & Data Tier
+Data element changes must be saved to be made permanent. This is a manual process that involves a single function call either client-side or from inside a Worker.
 
-Putting everything together it would look something like the above diagram. Note that the Data and Service base classes require a single argument: the primaryKey value. See the User constructor’s super(fullName) call where it runs some business logic on the fullName constructor argument before passing it to the Data base class’s constructor (in native code.)  
+### Saving client-side
 
-As previously noted, Service instances are created on first use. So the first time any servicemethod, in this case addUserAsync is called, a new MyService object instance is created with the primary key “default” (because that’s what the client specified in the call to `database.getService(MyService, "default")`.  
+Data can be saved to the database on the client using the `saveDataAsync` function on the `estate` object. This requires a network round-trip.
 
-If multiple users access the website they’ll get the very same “default” MyService instance with the very same object state (because service instances are singletons.) Clients can share data with each other by sharing it with the service and providing a method that returns the property. Allowing clients to interact with each other brings us to the final core concept, Server-Sent-Events. -->
+```typescript
+//...
+user.lastName = 'Jones';
+await estate.saveDataAsync(user);
+```
+
+A promise is returned that resolves when and if the Data element's changes are written to the database. Since you're already inside the worker, this does not involve a network round-trip.
+
+### Saving from inside a Worker
+
+Data can be saved from inside a Worker using the `saveData` function.
+
+```typescript
+import {Worker, saveData} from 'estate-runtime';
+export class ExerciseTrackerWorker extends Worker {
+    addUser(username: string) {
+        const user = new User(username);
+        saveData(user);
+    }
+}
+```
+
+:::tip tip
+The `saveData` function only saves the Data element you pass to it, not any Data elements in properties. If you'd like to save all the entire tree off Data elements, use the `saveDataGraphs` function instance.
+:::
+
+#### Unsaved Data Protection
+
+When you pass a Data element that's either new or has been modified to a Worker, the data element must be saved (or reverted) before the end of the transaction. Otherwise the transaction will fail and the client will get an `UnsavedChanges` exception.
+
+:::note design
+This design prevents makes incomplete data modifications easier to avoid.
+:::
+
+## Deletion
+
+Data elements can be deleted from inside a Worker using the `deleteObject` function.
+
+```typescript
+import {Worker, deleteObject} from 'estate-runtime'
+export class MyWorker extends Worker {
+    fooMethod(myData: Data): void {
+        deleteObject(myData);
+    }
+}
+```
+
+### Recreation Prevention
+
+The `deleteObject` function leaves behind a flag in the database to prevent another Data element with the same type and primaryKey from being created. This design is to prevent accidental recreation. If you do not want this feature, pass `true` as the second argument to `deleteObject`.
+
+## Keeping Data Updated Automatically
+
+Client-side instances of Data elements can be kept updated automatically when other clients or workers make changes.
+
+:::tip note
+This feature allows clients to get a Data element once and then rely on it to stay up to date as other clients make changes over time. This is useful for instance, when building real-time app dashboards, or real-time chat application, or anytime you'd like to share real-time state between a number of computers.
+:::
+
+:::note Client-side only
+Data elements are natively kept up to date when inside a Service so there's no need to subscribe on the backend.
+:::
+
+### Create a data update subscription
+
+* Use the `subscribeUpdatesAsync` function on the `estate` object to subscribe to updates
+
+```typescript
+const chatRoom = await estate.getDataAsync(ChatRoom, '#general');
+await estate.subscribeUpdatesAsync(chatRoom);
+```
+
+This command keeps the `ChatRoom` object pointed to by the `chatRoom` variable updated.  
+
+:::tip underlying object
+Even if you had mulitiple copies of the `chatRoom` variable, with different variable names, the object they all point to will be kept updated by `Estate` via the subscription.
+:::
+
+### Update Notification
+
+Additionally, after you've subscribed to updates for a Data element you can get notified after updates have been made. This is a great place to refresh your UI or otherwise make presentation-layer changes.
+
+* Attach a listener with the `addUpdateListener` function on the `estate` object
+
+```typescript
+//...
+let motd: string;
+estate.addUpdateListener(chatRoom, (e: DataUpdatedEvent<ChatRoom>) => {
+    if (e.deleted) {
+        console.log(`${e.target.Name}: Removed`);
+    } else {
+        if(motd !== e.target.messageOfTheDay) {
+            motd = e.target.messageOfTheDay;
+            console.log(`${e.target.Name}: MOTD updated "${motd}"`);
+        }
+    }
+})
+```
+
+Now, anytime the `#general` `ChatRoom` Data element is updated, the handler will be called.

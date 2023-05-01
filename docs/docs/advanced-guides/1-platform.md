@@ -18,7 +18,8 @@ The `estate-tools` CLI package talks to the admin layer.
 
 The runtime layer consists of two C++ daemons:
 
-1. **Serenity**: the AppServer/Database that marries JavaScript running in Chrome V8 to the data stored in an in-proc RocksDB instance
+1. **Serenity**: the AppServer/Database that marries JavaScript running in V8 to the data stored in an in-process RocksDB instance.
+   1. Code running in V8 and the RocksDB instance live in a process-isolated sandbox where only your service code executes.
 2. **River**: the WebSocket server that routes and validates requests to Serenity from the Internet.
 
 :::note

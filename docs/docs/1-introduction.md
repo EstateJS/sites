@@ -7,15 +7,20 @@ slug: '/'
 
 ![Alt](/img/banner.png "EstateJS Logo")
 
-Get ready to experience life without DevOps or boilerplate.
+## Highly Abstracted Cloud Platform
 
-Estate is a highly abstracted serverless cloud platform where developers create stateful backends by writing TypeScript domain-driven POJOs they already know how to write.
+Estate is where developers create stateful, serverless backends by writing TypeScript domain-logic-only POJOs.
 
-Estate handles all the cloud minutea: No more _REST_. No more interpreting HTTP status code arcanery, ORM layers, or web service routing nonsense. With no servers to manage nor ‘stacks’ to provision, Estate backends are live with a single command.
+## Covers All the Cloud Minutea
 
-For CRUD backends, persisting and using business data is painless as all the extra persistence code (DTOs, ORMs, etc) is just not necessary: Estate lets you build a full-stack data model.
+No more _REST_ or _GraphQL_, no more interpreting HTTP status code arcanery, or API routing nonsense.
 
-Consuming a Estate backend is trivial because all the client-connection code is generated for you.
+With no servers to manage nor ‘stacks’ to provision, Estate backends are live with a single command.
+
+Estate lets you build a full-stack data model, without :
+For CRUD backends, saving and using business data is painless as all the extra persistence code (DTOs, ORMs, etc) is not necessary
+
+Consuming a Estate backend is beyond simple - all the client-connection code is generated for you.
 
 Estate is entirely **open source** so there's no worry of vendor lock-in.
 

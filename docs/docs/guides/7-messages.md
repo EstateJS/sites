@@ -1,35 +1,111 @@
 ---
 sidebar_label: 'Messages'
-sidebar_position: 5
 ---
 
-This page is a work in progress. Check back later today or tomorrow (Sunday).
+# Messages
 
-<!-- # Message - built-in SSE
+Messages are an efficient way to send events from Workers that clients can handle. This feature, in effect, lets Workers call client-side code.
 
-Messages are an implementation of the Server-Sent-Events (SSE) concept used by socket.io and SignalR except built into Estate as a first-class concept. Messages are an efficient way to send data from the cloud (“Server”) to any number of clients without the clients polling a service.
+:::tip SSE
+This is an implementation of [Server-Sent-Events](https://en.wikipedia.org/wiki/Server-sent_events).
+:::
 
-## Writing & Sending
+## One-way: Worker to Clients
 
-Writing, sending, and consuming messages is easy. To write a Message simply extend the Message abstract base class. Unlike the two other base classes, Messages _do not_ have a primaryKey (see below.). Then at runtime, from inside a service method call create an instance of your new Message using the new operator. Then pass that object to `system.sendMessage(...)`. Any properties you define/set on the Message object will be transported to all clients that have registered to receive messages of that class type. Note, presently Messages cannot be fired directly from clients.
+Messages are sent from inside Workers to any number of clients who are listening.
 
-## Short lived, never saved
+## Properties
 
-The Message constructor does not take a primaryKey because Messages do not have datastores- their object instances are _transient_. Meaning, they are to be created, fired, and handled by clients but never saved or persisted. Think of a message instance as a notification that contains all relevant metadata about what happened to cause the message to be sent.
+Messages can contain any number of JavaScript properties with any name.
 
-## Message properties provide context
+:::tip Properties Provide Context
+You’re free to include all relevant context when you send message instances. For example, a `UserAdded` message may include a property `user` that has an instance of the `User` (Data) that was added.
+:::
 
-Along with all standard JS/TS types (Map, Set, Array, bool, string, etc..), Data and Service instances can be Message properties so you’re free to include all the relevant context when you send message instances. For example, a `UserAdded` message may include a property `user` that has an instance of the `User` (Data) that was added.
+### Data Types
 
-## Receiving messages on clients
+Most built-in JavaScript property types are supported including:
 
-This diagram illustrates a message being sent from a service instance and handled by client code.  
+* `undefined`
+* `null`
+* `number`
+* `boolean`
+* `object`
+* `Map`
+* `Set`
+* `Array`
+* `Date`
+* `BitInt`
+* types that extend `Data`
+* types that extend `Worker`
 
-Clients must subscribe to receive messages. To subscribe a client must pass three arguments:
+:::note ArrayBuffer
+At this time, the ArrayBuffer type is not supported.
+:::
 
-* A source Data or Service (in the above example, `this` is the current instance of MyService)
-* The type of the message (`MyMessage` above)
-* A function taking a single argument that will be called with the message instance when a message is recieved
+## Creating a new Message
 
-After a client subscribes and until the client unsubscribes (or shuts down), it will receive messages
-every time `system.sendMessage(...)` is called with the same source and message type. -->
+To create a Message you write a POJO that extends the `Message` base type in service code. The `Message` type is imported from the provided `estate-runtime` library.
+
+```typescript
+import {Message} from 'estate-runtime';
+export class ExerciseAdded extends Message {
+    constructor(public exercise: Exercise) {
+        super();
+    }
+}
+```
+
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/service/index.ts#L12)
+
+This creates a Message that contains a single Data element property. When this Message is sent, its properties go with it to any clients who are listening.
+
+:::note Transient
+Messages do not have a primaryKey because they're never stored in the database. They're meant to be instanciated, sent, and discarded but never saved or persisted.
+:::
+
+## Instantiating and Sending a Message
+
+You create new Messages using the `new` operator on the client or from inside a Worker. However, you must be inside a Worker to send Message instances to listening clients.
+
+```typescript
+import {sendMessage} from 'estate-runtime';
+//...
+sendMessage(this, new ExerciseAdded(exercise));
+```
+
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/service/index.ts#L85)
+
+The first argument is the `source`, this can be either a `Data` element instance or a `Worker` instance. In this example, `this` is the `ExerciseTrackerWorker` instance.  
+The second argument is the `Message` instance you want to send.
+
+## Subscribing to Messages
+
+To receive messages in client-code you use the `subscribeMessage` function off the `estate` object.
+
+```typescript
+await estate.subscribeMessageAsync(exerciseTracker, ExerciseAdded, (msg: ExerciseAdded) => {
+        const exercise = msg.exercise;
+        console.log(`${exercise.primaryKey} added`);
+    })
+```
+
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/src/pages/exercises-list.tsx#L71)
+
+The first argument is called the source. This can be any `Worker` instance or a `Data` element instance and must match the source used to send the message.
+
+:::tip Source
+The source argument lets clients listen for Messages coming from different Workers or Data elements. For instance, if you had two different ExerciseTrackerWorker instances (different primaryKeys), you could listen for `ExerciseAdded` messages from one and not the other by specifying a different source.
+:::
+
+:::note
+Workers cannot subscribe to Messages. Messages can, however, be passed to and returned from Worker methods.
+:::
+
+## Unsubscribing from Messages
+
+It's a good idea to unsubscribe from Messages when you no longer need them. A good place to do this in a UI is your page's tear-down logic.
+
+:::note Automatic Cleanup
+By design, the Estate platform doesn't depend on client code acting properly. Estate will automatically delete all your Message subscriptions shortly after the `estate` object is collected by the client's Garbage Collector.
+:::

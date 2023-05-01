@@ -2,6 +2,8 @@
 sidebar_label: 'Login'
 ---
 
+# Login
+
 1. Login to the default Estate cluster
 
 ```bash

@@ -38,6 +38,8 @@ Most built-in JavaScript property types are supported including:
 * `Array`
 * `Date`
 * `BitInt`
+* types that extend `Data`
+* types that extend `Worker`
 
 :::note ArrayBuffer
 At this time, the ArrayBuffer type is not supported.
@@ -56,6 +58,8 @@ export class ExerciseTrackerWorker extends Worker {
     }
     //...
 ```
+
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/service/index.ts#L33)
 
 The Worker requires a constructor with a single `string` argument named `primaryKey`. The primaryKey value must be passed to super.
 
@@ -85,6 +89,8 @@ export class ExerciseTrackerWorker extends Worker {
     }
 ```
 
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/service/index.ts#L49)
+
 When client A calls `addUser('Scott')` if the user doesn't already exist it will be saved and the worker's `this._usernames` is updated.  
 Later, when client B calls `addUser('Scott')` the user will already exist and client B will get an error.
 
@@ -99,6 +105,8 @@ A client application uses this TypeScript syntax to get a worker instance at run
 ```typescript
 const exerciseTracker = estate.getWorker(ExerciseTrackerWorker, "my primary key");
 ```
+
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/src/pages/edit-exercise.tsx#L25)
 
 The first argument (ExerciseTrackerWorker) is your worker class that extends Worker.
 
@@ -153,6 +161,10 @@ export class MyWorker extends Worker {
     }
 }
 ```
+
+:::caution Rare
+It's best to avoid using the `revertObject` if you can help it because it may make your Worker code hard to understand.
+:::
 
 ## Deletion
 

@@ -26,6 +26,8 @@ Most built-in JavaScript property types are supported including:
 * `Array`
 * `Date`
 * `BitInt`
+* types that extend `Data`
+* types that extend `Worker`
 
 :::note ArrayBuffer
 At this time, the ArrayBuffer type is not supported.
@@ -52,7 +54,9 @@ export class User extends Data {
 }
 ```
 
-The Data element construtor can contain any number of arguments. However, a `primaryKey` must be passed to super.
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/service/index.ts#L18)
+
+The Data element constructor can contain any number of arguments. However, a `primaryKey` must be passed to super.
 
 ### PrimaryKey
 
@@ -70,6 +74,8 @@ You create new Data object instances using the `new` operator. This works client
 const user = new User('Scott');
 ```
 
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/src/pages/create-exercise.tsx#L44)
+
 ## Retrieving
 
 ### Retrieving client-side
@@ -80,6 +86,8 @@ Data instances can be retrieved client-side using the `getDataAsync` method off 
 const user = await estate.getDataAsync(User, "a primary key");
 ```
 
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/src/pages/edit-exercise.tsx#L29)
+
 ### Retrieving from inside a Worker
 
 Data instances can be retrieved while inside a worker with the `getData` function imported from the provided `estate-runtime` library.
@@ -87,6 +95,8 @@ Data instances can be retrieved while inside a worker with the `getData` functio
 ```typescript
 const user = getData(User,"a primary key");
 ```
+
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/service/index.ts#L65)
 
 The arguments are the same as the clients-side example above. This loads the object into Service memory for use during the service method call. You can make changes or use the object like any other JavaScript object and even return it to the client.
 
@@ -104,6 +114,8 @@ user.lastName = 'Jones';
 await estate.saveDataAsync(user);
 ```
 
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/src/pages/edit-exercise.tsx#L71)
+
 A promise is returned that resolves when and if the Data element's changes are written to the database. Since you're already inside the worker, this does not involve a network round-trip.
 
 ### Saving from inside a Worker
@@ -119,6 +131,8 @@ export class ExerciseTrackerWorker extends Worker {
     }
 }
 ```
+
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/service/index.ts#L54)
 
 :::tip tip
 The `saveData` function only saves the Data element you pass to it, not any Data elements in properties. If you'd like to save all the entire tree off Data elements, use the `saveDataGraphs` function instance.
@@ -138,12 +152,21 @@ Data elements can be deleted from inside a Worker using the `deleteObject` funct
 
 ```typescript
 import {Worker, deleteObject} from 'estate-runtime'
-export class MyWorker extends Worker {
-    fooMethod(myData: Data): void {
-        deleteObject(myData);
+export class ExerciseTrackerWorker extends Worker {
+    //...
+    deleteExercise(primaryKey: string) {
+        const exercise = getData(Exercise, primaryKey);
+        if (exercise) {
+            this._exerciseIndex.delete(exercise.primaryKey);
+            deleteObject(exercise);
+        } else {
+            throw new Error('Failed to delete exercise because it does not exist');
+        }
     }
 }
 ```
+
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/service/index.ts#L92)
 
 ### Recreation Prevention
 
@@ -158,43 +181,63 @@ This feature allows clients to get a Data element once and then rely on it to st
 :::
 
 :::note Client-side only
-Data elements are natively kept up to date when inside a Service so there's no need to subscribe on the backend.
+Data elements are natively kept up to date when inside a Worker so there's no need to subscribe on the backend.
 :::
 
 ### Create a data update subscription
 
-* Use the `subscribeUpdatesAsync` function on the `estate` object to subscribe to updates
+* Use the `subscribeUpdatesAsync` function on the `estate` object to subscribe to updates on one or more Data elements.
 
 ```typescript
-const chatRoom = await estate.getDataAsync(ChatRoom, '#general');
-await estate.subscribeUpdatesAsync(chatRoom);
+await estate.subscribeUpdatesAsync(exercises);
 ```
 
-This command keeps the `ChatRoom` object pointed to by the `chatRoom` variable updated.  
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/src/pages/exercises-list.tsx#L60)
+
+This command keeps the `Exercise` objects pointed to by the `exercises` variable updated.  
 
 :::tip underlying object
-Even if you had mulitiple copies of the `chatRoom` variable, with different variable names, the object they all point to will be kept updated by `Estate` via the subscription.
+Even if you had mulitiple copies of the `exercises` variable, with different variable names, the object they all point to will be kept updated by `Estate` via the subscription.
 :::
 
 ### Update Notification
 
 Additionally, after you've subscribed to updates for a Data element you can get notified after updates have been made. This is a great place to refresh your UI or otherwise make presentation-layer changes.
 
-* Attach a listener with the `addUpdateListener` function on the `estate` object
+* Attach a listener with the `addUpdateListener` function on the `estate` object passing it the Data elements to attach the listener to and a callback function you want called when updates happen.
 
 ```typescript
-//...
-let motd: string;
-estate.addUpdateListener(chatRoom, (e: DataUpdatedEvent<ChatRoom>) => {
+estate.addUpdateListener(exercises, (e: DataUpdatedEvent<Exercise>) => {
     if (e.deleted) {
-        console.log(`${e.target.Name}: Removed`);
+        console.log(`${e.target.primaryKey} deleted`);
     } else {
-        if(motd !== e.target.messageOfTheDay) {
-            motd = e.target.messageOfTheDay;
-            console.log(`${e.target.Name}: MOTD updated "${motd}"`);
-        }
+        console.log(`${e.target.primaryKey} updated`);
     }
-})
+});
 ```
 
-Now, anytime the `#general` `ChatRoom` Data element is updated, the handler will be called.
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/src/pages/exercises-list.tsx#L83)
+
+Now, anytime the `Exercise` Data elements pointed to by the `exercises` variable receives an update, the callback is called.  
+
+The `e.target` property contains the Data element that was updated.
+
+### Unsubscribing from Updates
+
+You should unsubscribe from updates to objects when you no longer need to receive updates. A good place to do this in a UI is in your page's tear-down logic.
+
+* Unsubscribe from updates to one or more Data elements using the `unsubscribeUpdatesAsync` function on the `estate` object passing it the Data elements you previously subscribed to
+
+```typescript
+await estate.unsubscribeUpdatesAsync(exercises);
+```
+
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/src/pages/exercises-list.tsx#L93)
+
+:::note listeners
+This also automatically clears any listeners added using the `addUpdateListeners`.
+:::
+
+:::note Automatic Cleanup
+By design, the Estate platform doesn't depend on client code acting properly. Estate will automatically delete all your Data update subscriptions shortly after the `estate` object is collected by the client's Garbage Collector.
+:::

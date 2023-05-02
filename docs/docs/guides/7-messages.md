@@ -58,7 +58,7 @@ export class ExerciseAdded extends Message {
 
 [Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/service/index.ts#L12)
 
-This creates a Message that contains a single Data element property. When this Message is sent, its properties go with it to any clients who are listening.
+This creates a Message that contains a single Data element property. When this Message is sent, its properties go with it to any clients who are listening. The constructor can take any number of arguments.
 
 :::note Transient
 Messages do not have a primaryKey because they're never stored in the database. They're meant to be instanciated, sent, and discarded but never saved or persisted.
@@ -81,7 +81,7 @@ The second argument is the `Message` instance you want to send.
 
 ## Subscribing to Messages
 
-To receive messages in client-code you use the `subscribeMessage` function off the `estate` object.
+* Subscribe to receive messages in client-code you use the `subscribeMessage` function off the `estate` object.
 
 ```typescript
 await estate.subscribeMessageAsync(exerciseTracker, ExerciseAdded, (msg: ExerciseAdded) => {
@@ -93,6 +93,7 @@ await estate.subscribeMessageAsync(exerciseTracker, ExerciseAdded, (msg: Exercis
 [Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/src/pages/exercises-list.tsx#L71)
 
 The first argument is called the source. This can be any `Worker` instance or a `Data` element instance and must match the source used to send the message.
+The second argument is the `Message` derived type. The third argument is a callback function that takes an instance of the `Message` derived type.
 
 :::tip Source
 The source argument lets clients listen for Messages coming from different Workers or Data elements. For instance, if you had two different ExerciseTrackerWorker instances (different primaryKeys), you could listen for `ExerciseAdded` messages from one and not the other by specifying a different source.
@@ -105,6 +106,18 @@ Workers cannot subscribe to Messages. Messages can, however, be passed to and re
 ## Unsubscribing from Messages
 
 It's a good idea to unsubscribe from Messages when you no longer need them. A good place to do this in a UI is your page's tear-down logic.
+
+* Unsubscribe from a Message using the `unsubscribeMessageAsync` function off the `estate` object.
+
+```typescript
+estate.unsubscribeMessageAsync(exerciseTracker, ExerciseAdded).catch((reason:any) => {
+    console.error(reason);
+});
+```
+
+[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/src/pages/exercises-list.tsx#L98)
+
+The first argument is the source. This can be any `Worker` instance or a `Data` element instance and must match the source used when subscribing.
 
 :::note Automatic Cleanup
 By design, the Estate platform doesn't depend on client code acting properly. Estate will automatically delete all your Message subscriptions shortly after the `estate` object is collected by the client's Garbage Collector.

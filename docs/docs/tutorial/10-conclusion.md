@@ -31,5 +31,6 @@ Congratulations on finishing the tutorial!
 
 :::tip More
 There's more power to unlock, namely: real-time reactive/observable Data (think: real-time views, updated when other clients make changes), and real-time worker-to-client Messsages (think: chat room).  
-Dig into the [Advanced Guides](guides/introduction) to continue your Estate adventure.
+
+Continue learning with the [Guides](/guides/introduction)
 :::

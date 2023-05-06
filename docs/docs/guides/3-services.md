@@ -12,7 +12,7 @@ Services are comprised of functions and POJOs (Plain Old JavaScript Objects) wri
 
 ## Service Creation
 
-To create a service you must create a new folder and initialize it. Initializing the service folder creates a `service.json` file inside the folder that contains (among other things) the service's name.
+To create a service you must create a new folder and initialize it. Initializing the service folder creates a `service.json` file inside the folder that contains the service's name and other service metadata.
 
 To initialize a service you use the init command passing it the directory and the service's name
 
@@ -23,6 +23,10 @@ $ estate init . --name my-service-name
 ```
 
 You can only initialize a service once.
+
+:::warning Source Control
+You should store the `service/service.json` file as well as the `service/estate-runtime` directory in source control.
+:::
 
 ## Service Deployment
 

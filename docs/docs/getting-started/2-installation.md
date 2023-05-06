@@ -4,8 +4,6 @@ sidebar_label: 'Installation'
 
 # Installation
 
-Estate is a hosted cloud platform and a set of npm packages.
-
 :::tip
 Use the [Fast Track](/#fast-track) to understand Estate in *15 minutes*⏱!  
 Use the [Playground](getting-started/playground) to try Estate directly in your browser!

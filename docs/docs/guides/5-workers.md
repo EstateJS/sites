@@ -61,7 +61,9 @@ export class ExerciseTrackerWorker extends Worker {
 
 [Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/service/index.ts#L33)
 
-The Worker requires a constructor with a single `string` argument named `primaryKey`. The primaryKey value must be passed to super.
+### Contructor Signature
+
+Workers require a constructor with a single `string` argument named `primaryKey`. The primaryKey value must be passed to super.
 
 ### PrimaryKey
 
@@ -76,8 +78,6 @@ Worker instances are created automatically the first time a method is called on 
 
 Workers retain the values of all their properties between calls. This makes them stateful.
 
-For example:
-
 ```typescript
 export class ExerciseTrackerWorker extends Worker {
     private _usernames: Set<string>;
@@ -88,8 +88,6 @@ export class ExerciseTrackerWorker extends Worker {
         this._usernames.add(username);
     }
 ```
-
-[Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/service/index.ts#L49)
 
 When client A calls `addUser('Scott')` if the user doesn't already exist it will be saved and the worker's `this._usernames` is updated.  
 Later, when client B calls `addUser('Scott')` the user will already exist and client B will get an error.
@@ -121,6 +119,10 @@ When a client calls a method on a Worker proxy, the request is sent over the Int
 ## Automatically Saved
 
 Any property changes made inside a worker method call are saved automatically if the underlying call succeeds.
+
+## Versioned
+
+Workers are transparently versioned. Each time they're changed and saved to the database the version changes. This version is used to ensure clients and workers only work on the latest version of the Worker.
 
 ## Transactional Unit-of-Work
 
@@ -163,7 +165,7 @@ export class MyWorker extends Worker {
 ```
 
 :::caution Rare
-It's best to avoid using the `revertObject` if you can help it because it may make your Worker code hard to understand.
+It's best to avoid using the `revertObject` because it may make your Worker code hard to understand.
 :::
 
 ## Deletion

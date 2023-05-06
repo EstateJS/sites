@@ -8,6 +8,10 @@ Data elements are used to keep, use, and share structured data.
 
 Data elements are like spreadsheets where the columns are TypeScript properties and each row is a unique instance.
 
+## Versioned
+
+Data elements are transparently versioned. Each time they're saved to the database the version changes. This version is used to ensure clients and workers only work on the latest version of the Data element.
+
 ## Properties
 
 Data can contain any number of JavaScript properties with any name. You can create new properties in any Data method, not just the constructor, just like any other POJO.
@@ -35,7 +39,7 @@ At this time, the ArrayBuffer type is not supported.
 
 ## Business Logic
 
-Data elements are ideal for holding business data because you can write business logic (getters and setters) that ensure property values are valid before they're changed or returned.  
+Data elements are ideal for holding business data because you can write business logic (getters/setters, methods) that ensure property values are valid before they're changed or returned.  
 
 ### Local Execution
 
@@ -116,7 +120,7 @@ await estate.saveDataAsync(user);
 
 [Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/src/pages/edit-exercise.tsx#L71)
 
-A promise is returned that resolves when and if the Data element's changes are written to the database. Since you're already inside the worker, this does not involve a network round-trip.
+A promise is returned that resolves when and if the Data element's changes are written to the database.
 
 ### Saving from inside a Worker
 
@@ -134,13 +138,15 @@ export class ExerciseTrackerWorker extends Worker {
 
 [Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/service/index.ts#L54)
 
-:::tip tip
-The `saveData` function only saves the Data element you pass to it, not any Data elements in properties. If you'd like to save all the entire tree off Data elements, use the `saveDataGraphs` function instance.
+:::note object graph
+The `saveData` function only saves the Data element you pass to it, not any Data elements in properties. If you'd like to save an entire tree of Data elements, use the `saveDataGraphs` function.
 :::
 
 #### Unsaved Data Protection
 
-When you pass a Data element that's either new or has been modified to a Worker, the data element must be saved (or reverted) before the end of the transaction. Otherwise the transaction will fail and the client will get an `UnsavedChanges` exception.
+When Data elements are modified inside a Worker, the Data element must either be saved or reverted before the end of the Worker method transaction. Otherwise the transaction will fail and the client will get an `UnsavedChanges` exception.
+
+Additionally, if a new Data element or one that has changes is passed to a Worker method, this will count as unsaved changes.
 
 :::note design
 This design prevents makes incomplete data modifications easier to avoid.
@@ -168,25 +174,23 @@ export class ExerciseTrackerWorker extends Worker {
 
 [Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/service/index.ts#L92)
 
-### Recreation Prevention
-
+:::tip Recreation Prevention
 The `deleteObject` function leaves behind a flag in the database to prevent another Data element with the same type and primaryKey from being created. This design is to prevent accidental recreation. If you do not want this feature, pass `true` as the second argument to `deleteObject`.
+:::
 
 ## Keeping Data Updated Automatically
 
 Client-side instances of Data elements can be kept updated automatically when other clients or workers make changes.
 
-:::tip note
 This feature allows clients to get a Data element once and then rely on it to stay up to date as other clients make changes over time. This is useful for instance, when building real-time app dashboards, or real-time chat application, or anytime you'd like to share real-time state between a number of computers.
-:::
 
-:::note Client-side only
-Data elements are natively kept up to date when inside a Worker so there's no need to subscribe on the backend.
+:::note Workers
+Data elements are natively kept up to date when inside a Worker so there's no need to subscribe in backend code.
 :::
 
 ### Create a data update subscription
 
-* Use the `subscribeUpdatesAsync` function on the `estate` object to subscribe to updates on one or more Data elements.
+Use the `subscribeUpdatesAsync` function on the `estate` object to subscribe to updates on one or more Data elements.
 
 ```typescript
 await estate.subscribeUpdatesAsync(exercises);
@@ -197,14 +201,14 @@ await estate.subscribeUpdatesAsync(exercises);
 This command keeps the `Exercise` objects pointed to by the `exercises` variable updated.  
 
 :::tip underlying object
-Even if you had mulitiple copies of the `exercises` variable, with different variable names, the object they all point to will be kept updated by `Estate` via the subscription.
+Even if you had mulitiple copies of the `exercises` variable, with different variable names, the objects they all point to will be kept updated by `Estate` via the subscription.
 :::
 
 ### Update Notification
 
 Additionally, after you've subscribed to updates for a Data element you can get notified after updates have been made. This is a great place to refresh your UI or otherwise make presentation-layer changes.
 
-* Attach a listener with the `addUpdateListener` function on the `estate` object passing it the Data elements to attach the listener to and a callback function you want called when updates happen.
+Attach a listener with the `addUpdateListener` function on the `estate` object passing it one or more Data elements to attach the listener to and a callback function you want called when updates happen.
 
 ```typescript
 estate.addUpdateListener(exercises, (e: DataUpdatedEvent<Exercise>) => {
@@ -224,9 +228,9 @@ The `e.target` property contains the Data element that was updated.
 
 ### Unsubscribing from Updates
 
-You should unsubscribe from updates to objects when you no longer need to receive updates. A good place to do this in a UI is in your page's tear-down logic.
+It's a good idea to unsubscribe from updates to Data elements once you no longer need to receive them. A good place to do this in a UI is a page's tear-down logic.
 
-* Unsubscribe from updates to one or more Data elements using the `unsubscribeUpdatesAsync` function on the `estate` object passing it the Data elements you previously subscribed to
+Unsubscribe from updates to one or more Data elements using the `unsubscribeUpdatesAsync` function on the `estate` object passing it one or more Data elements you previously subscribed to
 
 ```typescript
 await estate.unsubscribeUpdatesAsync(exercises);
@@ -235,7 +239,7 @@ await estate.unsubscribeUpdatesAsync(exercises);
 [Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/src/pages/exercises-list.tsx#L93)
 
 :::note listeners
-This also automatically clears any listeners added using the `addUpdateListeners`.
+This automatically removes listeners added using `addUpdateListeners`.
 :::
 
 :::note Automatic Cleanup

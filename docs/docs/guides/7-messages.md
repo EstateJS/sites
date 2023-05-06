@@ -12,7 +12,7 @@ This is an implementation of [Server-Sent-Events](https://en.wikipedia.org/wiki/
 
 ## One-way: Worker to Clients
 
-Messages are sent from inside Workers to any number of clients who are listening.
+Messages are sent from inside Workers to any number of subscribed clients.
 
 ## Properties
 
@@ -58,7 +58,7 @@ export class ExerciseAdded extends Message {
 
 [Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/service/index.ts#L12)
 
-This creates a Message that contains a single Data element property. When this Message is sent, its properties go with it to any clients who are listening. The constructor can take any number of arguments.
+This creates a Message that contains a single Data element property. When this Message is sent, its properties go with it to any clients who are subscribed. The constructor can take any number of arguments.
 
 :::note Transient
 Messages do not have a primaryKey because they're never stored in the database. They're meant to be instanciated, sent, and discarded but never saved or persisted.
@@ -66,7 +66,7 @@ Messages do not have a primaryKey because they're never stored in the database. 
 
 ## Instantiating and Sending a Message
 
-You create new Messages using the `new` operator on the client or from inside a Worker. However, you must be inside a Worker to send Message instances to listening clients.
+You create new Messages using the `new` operator and use the `sendMessage` function from the `estate-runtime` library to send the message.
 
 ```typescript
 import {sendMessage} from 'estate-runtime';
@@ -81,22 +81,23 @@ The second argument is the `Message` instance you want to send.
 
 ## Subscribing to Messages
 
-* Subscribe to receive messages in client-code you use the `subscribeMessage` function off the `estate` object.
+To subscribe to receive messages in client-code you use the `subscribeMessage` function off the `estate` object.
 
 ```typescript
 await estate.subscribeMessageAsync(exerciseTracker, ExerciseAdded, (msg: ExerciseAdded) => {
         const exercise = msg.exercise;
         console.log(`${exercise.primaryKey} added`);
-    })
+    });
 ```
 
 [Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/src/pages/exercises-list.tsx#L71)
 
-The first argument is called the source. This can be any `Worker` instance or a `Data` element instance and must match the source used to send the message.
-The second argument is the `Message` derived type. The third argument is a callback function that takes an instance of the `Message` derived type.
+The first argument is the source. This must match the source used to send the message. This this case it's a `ExerciseTrackerWorker` Worker proxy instance.  
+The second argument is the `Message` derived type you'd like to subscribe to.  
+The third argument is a callback function that takes an instance of the `Message` derived type that gets called when new messages are received.
 
 :::tip Source
-The source argument lets clients listen for Messages coming from different Workers or Data elements. For instance, if you had two different ExerciseTrackerWorker instances (different primaryKeys), you could listen for `ExerciseAdded` messages from one and not the other by specifying a different source.
+The source argument lets clients listen for Messages coming from different Workers or Data elements. For instance, if you had two different `ExerciseTrackerWorker` instances (different primaryKeys), you could listen for `ExerciseAdded` messages from one and not the other by specifying a different source.
 :::
 
 :::note
@@ -107,17 +108,16 @@ Workers cannot subscribe to Messages. Messages can, however, be passed to and re
 
 It's a good idea to unsubscribe from Messages when you no longer need them. A good place to do this in a UI is your page's tear-down logic.
 
-* Unsubscribe from a Message using the `unsubscribeMessageAsync` function off the `estate` object.
+Unsubscribe from a Message using the `unsubscribeMessageAsync` function off the `estate` object.
 
 ```typescript
-estate.unsubscribeMessageAsync(exerciseTracker, ExerciseAdded).catch((reason:any) => {
-    console.error(reason);
-});
+await estate.unsubscribeMessageAsync(exerciseTracker, ExerciseAdded);
 ```
 
 [Example](https://github.com/EstateJS/exercise-tracker/blob/e84526a452630114fe70c6b75d35c4b78391672e/src/pages/exercises-list.tsx#L98)
 
-The first argument is the source. This can be any `Worker` instance or a `Data` element instance and must match the source used when subscribing.
+The first argument is the source. This must match the source used when subscribing.
+The second argument is the `Message` dervied type.
 
 :::note Automatic Cleanup
 By design, the Estate platform doesn't depend on client code acting properly. Estate will automatically delete all your Message subscriptions shortly after the `estate` object is collected by the client's Garbage Collector.

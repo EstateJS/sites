@@ -4,7 +4,7 @@ sidebar_label: 'Playground'
 
 # Playground
 
-Estate is a hosted cloud platform and a set of npm packages. The playground is a VSCode-like IDE that lets you develop Estate apps directly in your browser without needing to install anything.
+The playground is a VSCode-like IDE that lets you develop Estate apps directly in your browser without needing to install anything.
 
 1. Click the button below and open the playground in a new tab.
 

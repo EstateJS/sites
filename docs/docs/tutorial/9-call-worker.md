@@ -4,7 +4,7 @@ sidebar_label: 'Call a Worker from client code'
 
 # Call a Worker from client code
 
-The `sign-log-book.tsx` is the page where people enter their first name and select a date to sign the log book. For this to function, we're going to create a new `Entry` and pass it to the `LogBook` worker.
+The `sign-log-book.tsx` page is where people enter their first name and select a date to sign the log book. For this to function, we're going to create a new `Entry` instance and pass it to the `LogBook` worker.
 
 ## Use the `estate` object to get a `LogBook` worker proxy
 

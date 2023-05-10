@@ -34,7 +34,7 @@ npm install --saveDev estate-tools
 2. Download the tutorial locally
 
 ```bash
-$ npx tiged estatejs/estate/tutorial tutorial
+$ npx tiged estatejs/tutorial tutorial
 $ cd tutorial
 ```
 

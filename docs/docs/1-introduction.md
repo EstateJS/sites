@@ -7,9 +7,9 @@ slug: '/'
 
 ![EstateJS Logo](/img/banner.png "EstateJS Logo")
 
-Estate is where developers build and deploy stateful micro-backends by writing TypeScript POJOs and issuing a single command.  
+Estate is a programmable realtime datastore where developers create fully functional backends by extending one of three TypeScript classes: Workers to create stateful server-side controllers, Data to create persisted, sharable data, and Messages to perform real-time SSE.
 
-`estate deploy .`
+Estate is designed for simplicity and performance.
 
 ## Fast Track ⏱️
 
